@@ -10,7 +10,8 @@ def export_graph_to_jsonl(graph: nx.MultiDiGraph, output_path: str):
             record = {
                 "source": u,
                 "target": v,
-                "relation": data.get("label", k)
+                "relation": data.get("label", k),
+                "weight": data.get("weight", 1.0)  # 預設為 1.0，如果沒有設定
             }
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
             count += 1
@@ -18,7 +19,6 @@ def export_graph_to_jsonl(graph: nx.MultiDiGraph, output_path: str):
 
 
 if __name__ == "__main__":
-    # 假設你先前已經在這裡建立過 G
     from scripts.build_graph import build_knowledge_graph
 
     csv_path = "data/conceptnet_filtered.csv"
