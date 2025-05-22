@@ -1,6 +1,5 @@
 import json
 import networkx as nx
-import os
 
 
 def export_graph_to_jsonl(graph: nx.MultiDiGraph, output_path: str):
