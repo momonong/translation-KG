@@ -8,10 +8,9 @@ from api.cors import ExtensionCORS
 app = FastAPI()
 
 
-# ✅ 加入這段
 app.add_middleware(
-    ExtensionCORS,
-    allow_origins=[],  # 初始為空，會動態加入來自 extension 的 origin
+    CORSMiddleware,
+    allow_origin_regex=r"^chrome-extension://.*$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
