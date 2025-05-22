@@ -2,7 +2,6 @@
 from fastapi import FastAPI
 from api.routers import keywords, related_terms
 from fastapi.middleware.cors import CORSMiddleware
-from api.cors import ExtensionCORS
 
 
 app = FastAPI()
