@@ -48,7 +48,7 @@ if __name__ == "__main__":
 
     results = parse_text(text)
 
-    print(f"\n🔍 原始文本：{text}\n")
+    print(f"\n原始文本：{text}\n")
     print("解析結果：")
     print(f"{'Token':<15}{'Lemma':<15}{'POS':<8}{'Dep':<15}{'Head'}")
     print("-" * 60)
@@ -58,4 +58,4 @@ if __name__ == "__main__":
         )
 
     keywords = extract_keywords(results)
-    print(f"\n🔑 擷取出的關鍵詞（建議查詢）：{keywords}")
+    print(f"\n擷取出的關鍵詞（建議查詢）：{keywords}")

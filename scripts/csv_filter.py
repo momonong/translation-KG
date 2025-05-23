@@ -16,7 +16,7 @@ def is_simplified_chinese(term: str) -> bool:
     word = term.split("/c/zh/")[-1]
     return word != cc.convert(word)
 
-# ✅ 擴充後的保留語意關係（共 13 種）
+# 擴充後的保留語意關係（共 13 種）
 keep_relations = {
     "/r/Synonym", "/r/SimilarTo", "/r/DefinedAs", "/r/Antonym", "/r/FormOf",
     "/r/DerivedFrom", "/r/EtymologicallyRelatedTo", "/r/TranslationOf",
@@ -55,11 +55,11 @@ with open(input_path, "r", encoding="utf-8") as fin, \
             writer.writerow(row)
 
 # 顯示統計結果
-print("\n✅ 處理完成！")
-print(f"📊 原始總行數: {total_rows}")
-print(f"📦 保留行數: {kept_rows}")
-print(f"🎯 過濾後保留比率: {(kept_rows / total_rows) * 100:.2f}%\n")
+print("\n處理完成！")
+print(f"原始總行數: {total_rows}")
+print(f"保留行數: {kept_rows}")
+print(f"過濾後保留比率: {(kept_rows / total_rows) * 100:.2f}%\n")
 
-print("📚 各保留關係類型統計：")
+print("各保留關係類型統計：")
 for rel, count in sorted(relation_counts.items(), key=lambda x: -x[1]):
     print(f"{rel}: {count:,} 筆")
