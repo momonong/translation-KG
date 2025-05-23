@@ -14,7 +14,7 @@ def export_graph_to_jsonl(graph: nx.MultiDiGraph, output_path: str):
             }
             f.write(json.dumps(record, ensure_ascii=False) + "\n")
             count += 1
-    print(f"✅ 已輸出 {count} 筆關係到：{output_path}")
+    print(f"已輸出 {count} 筆關係到：{output_path}")
 
 
 if __name__ == "__main__":
@@ -23,8 +23,8 @@ if __name__ == "__main__":
     csv_path = "data/conceptnet_filtered.csv"
     output_path = "data/graph_data.jsonl"
 
-    print("🚀 建立知識圖譜中...")
+    print("建立知識圖譜中...")
     G = build_knowledge_graph(csv_path)
 
-    print("💾 輸出 JSONL...")
+    print("輸出 JSONL...")
     export_graph_to_jsonl(G, output_path)

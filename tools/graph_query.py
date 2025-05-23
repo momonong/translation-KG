@@ -75,5 +75,5 @@ if __name__ == "__main__":
     term = "/c/en/graph"
     result = get_related_terms(G, term, top_k_per_relation=5)
 
-    print(f"\n🔍 Term: {term}")
+    print(f"\nTerm: {term}")
     print(json.dumps(result, indent=2, ensure_ascii=False))

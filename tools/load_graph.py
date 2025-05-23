@@ -17,5 +17,5 @@ def load_graph_from_jsonl(jsonl_path: str) -> nx.MultiDiGraph:
             G.add_node(v)
             G.add_edge(u, v, key=rel, label=rel, weight=weight)
 
-    print(f"✅ 已載入圖：{G.number_of_nodes()} 節點，{G.number_of_edges()} 邊")
+    print(f"已載入圖：{G.number_of_nodes()} 節點，{G.number_of_edges()} 邊")
     return G
