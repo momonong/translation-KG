@@ -21,7 +21,7 @@ def simplify_uri(uri: str) -> str:
 def simplify_relation(relation: str) -> str:
     return relation.replace("/r/", "")
 
-def get_related_terms(graph: nx.MultiDiGraph, term: str, top_k_per_relation: int = 20):
+def extract_subgraph_data(graph: nx.MultiDiGraph, term: str, top_k_per_relation: int = 20):
     if term not in graph:
         return []
 
@@ -73,7 +73,7 @@ if __name__ == "__main__":
     G = load_graph_from_jsonl(jsonl_path)
 
     term = "/c/en/graph"
-    result = get_related_terms(G, term, top_k_per_relation=5)
+    result = extract_subgraph_data(G, term, top_k_per_relation=5)
 
     print(f"\nTerm: {term}")
     print(json.dumps(result, indent=2, ensure_ascii=False))
