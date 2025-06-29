@@ -1,13 +1,9 @@
-import re
 from fastapi import APIRouter, Query, Request
-from api.models.models import GroupedRelatedTermsResponse
+from api.models.kg import GroupedRelatedTermsResponse
 from tools.graph_query import extract_subgraph_data
+from utils.detect_lang import detect_language_prefix
 
 router = APIRouter()
-
-
-def detect_language_prefix(term: str) -> str:
-    return "zh" if re.search(r"[\u4e00-\u9fff]", term) else "en"
 
 
 @router.get("/related_terms", response_model=GroupedRelatedTermsResponse)

@@ -1,6 +1,5 @@
-# api/routers/keywords.py
 from fastapi import APIRouter, Query
-from api.models.models import KeywordResponse
+from api.models.kg import KeywordResponse
 from tools.parser import parse_text, extract_keywords
 
 router = APIRouter()

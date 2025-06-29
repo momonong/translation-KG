@@ -1,12 +1,8 @@
-import re
 from fastapi import APIRouter, Query, Request
 from tools.graph_query import extract_subgraph_data
+from utils.detect_lang import detect_language_prefix
 
 router = APIRouter()
-
-
-def detect_language_prefix(term: str) -> str:
-    return "zh" if re.search(r"[\u4e00-\u9fff]", term) else "en"
 
 
 @router.get("/graph", response_model=list)

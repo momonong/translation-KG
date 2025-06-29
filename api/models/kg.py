@@ -32,3 +32,5 @@ class RelationGroup(BaseModel):
 class GroupedRelatedTermsResponse(BaseModel):
     term: str
     groups: List[RelationGroup]
+
+
