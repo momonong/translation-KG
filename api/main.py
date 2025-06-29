@@ -14,7 +14,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.state.graph = load_graph_from_jsonl("data/graph_data.jsonl")
+# app.state.graph = load_graph_from_jsonl("data/graph_data.jsonl") #! Remember to uncomment
 
 # Knowledge Graph API
 app.include_router(keywords.router, prefix="/api")

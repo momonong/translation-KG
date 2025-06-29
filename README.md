@@ -8,7 +8,6 @@ It includes components based on [LibreTranslate](https://github.com/LibreTransla
 
 If you modify and distribute this project (including making it available as a network service), please ensure your changes are made available under the same license.
 
-
 ## Knowledge Graph
 
 [data file link](https://u.pcloud.link/publink/show?code=kZu6Ph5ZcKL2TVPtKgupG9cUmR5y98UD7Tik)
@@ -18,4 +17,11 @@ If you modify and distribute this project (including making it available as a ne
 poetry run python -m scripts.csv_filter
 poetry run python -m scripts.build_graph
 poetry run python -m scripts.export_graph
+```
+
+## Translating
+
+```
+poetry run libretranslate --load-only en,zh --url-prefix libre-translate --port 5090
+poetry run uvicorn api.main:app --reload
 ```
