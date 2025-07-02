@@ -50,6 +50,6 @@ def translate(text: str, target: str = "zh", alt: int = 3) -> dict:
         }
 
     except requests.exceptions.RequestException as e:
-        raise RuntimeError(f"🔌 POST request failed: {e}")
+        raise RuntimeError(f"POST request failed: {e}")
     except (ValueError, KeyError, TypeError) as e:
-        raise RuntimeError(f"🔍 Unexpected response format: {response.text}")
+        raise RuntimeError(f"Unexpected response format: {response.text}")
