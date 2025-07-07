@@ -8,13 +8,14 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"^chrome-extension://.*$",
+    # allow_origin_regex=r"^chrome-extension://.*$",
+    allow_origins=["*"],  # ⛳️ 先開放全部 origins 看能不能正常 OPTIONS
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# app.state.graph = load_graph_from_jsonl("data/graph_data.jsonl") #! Remember to uncomment
+app.state.graph = load_graph_from_jsonl("data/graph_data.jsonl") 
 
 # Knowledge Graph API
 app.include_router(keywords.router, prefix="/api")
