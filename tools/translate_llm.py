@@ -21,28 +21,31 @@ def translate_with_llm(word, context):
     使用 gemini-2.5-flash-lite-preview-06-17 + Google Search Tool 做 context-aware 查詞
     必要時自動查網路資訊
     """
-    prompt = (
-        f"請根據下列英文句子的語境，將指定單字「{word}」翻譯為台灣常用繁體中文。"
-        "不用中國大陸詞彙（如「視頻」）。\n"
-        "請**用 Markdown 條列，每一行都分開寫，嚴格換行**，格式如下：\n\n"
-        f"**查詢單字**：{word}\n"
-        "1. **主要義項**：......\n"
-        "2. **詞性**：......\n"
-        "3. **語意說明**：......\n"
-        "4. **其他常見義項**：\n"
-        "- 義項1\n"
-        "- 義項2\n"
-        "- ...\n"
-        "（如無其他義項請寫「無」）\n"
-        "千萬不要全部寫成一行，不要省略任何換行符號，也不要回原文，也不要額外說明。\n"
-        f"\n英文句子：{context}\n查詢單字：{word}"
-    )
+    prompt = f"""
+    請根據下列英文句子的語境，將指定單字「{word}」翻譯為台灣常用繁體中文，嚴禁使用中國大陸詞彙。
+    請直接輸出下方 HTML 格式，並務必每一行、每個部份都照下面範例格式產生：
+
+    <b>查詢單字：</b>{word}<br>
+    <b>主要義項：</b>…<br>
+    <b>詞性：</b>…<br>
+    <b>語意說明：</b>…<br>
+    <b>其他常見義項：</b>
+    <ul>
+    <li>義項1</li>
+    <li>義項2</li>
+    </ul>
+
+    不要補充說明，不要包其他 div 或 pre 或 code block，只能回傳上述內容。
+
+    英文句子：{context}
+    查詢單字：{word}
+    """
     response = client.models.generate_content(
         model="gemini-2.5-flash-lite-preview-06-17",
         contents=prompt,
         config=config,
     )
-    print(f"LLM 回應：{response.text.strip()}")
+    # print(f"LLM 回應：{response.text.strip()}")
     return response.text.strip()
 
 # ==== 測試範例 ====
