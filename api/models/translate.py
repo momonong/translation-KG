@@ -2,11 +2,7 @@ from pydantic import BaseModel
 
 class TranslateRequest(BaseModel):
     text: str
-    alternatives: int
+    context: str
 
 class TranslateResponse(BaseModel):
-    original: str
-    translated: str
-    alternatives: list[str] = []
-    source_lang: str
-    target_lang: str
+    result: str  

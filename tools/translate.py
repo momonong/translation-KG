@@ -2,22 +2,13 @@ import os
 import requests
 from dotenv import load_dotenv
 from utils.chinese_s2t import to_traditional, convert_list
-from langdetect import detect
+from utils.detect_lang import detect_lang
 
 
 load_dotenv()
 
 API_URL = os.getenv("TRANSLATE_API_URL")
 API_KEY = os.getenv("TRANSLATE_API_KEY", "")
-
-
-def detect_lang(text, context=""):
-    try:
-        sample = context if context else text
-        lang = detect(sample)
-        return lang  # 'en', 'zh-cn', 'zh-tw', etc
-    except:
-        return "unknown"
 
 
 def translate(text: str, context: str = None, alt: int = 3) -> dict:

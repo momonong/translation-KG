@@ -1,6 +1,8 @@
 import re
+from langdetect import detect
 
-def detect_language_prefix(term: str) -> str:
+
+def detect_lang(term: str) -> str:
     if re.search(r"[\u4e00-\u9fff]", term):
         return "zh"
     elif re.search(r"[a-zA-Z]", term):
@@ -8,6 +10,13 @@ def detect_language_prefix(term: str) -> str:
     else:
         return "unsupported"
 
+# def detect_lang(text, context=""):
+#     try:
+#         sample = context if context else text
+#         lang = detect(sample)
+#         return lang[:2]  # 'en', 'zh-cn', 'zh-tw', etc
+#     except:
+#         return "unknown"
 
 
 if __name__ == "__main__":
@@ -16,14 +25,14 @@ if __name__ == "__main__":
         "Hello, how are you?",
         "你好，你好吗？",
         "Bonjour, comment ça va?",
-        "こんにちは、お元気ですか？"
+        "こんにちは、お元気ですか？",
     ]
 
     for term in test_terms:
         lang_prefix = detect_language_prefix(term)
         print(f"Term: {term} | Detected Language Prefix: {lang_prefix}")
 
-    print(detect_language_prefix("你好"))        # zh
-    print(detect_language_prefix("hello world")) # en
-    print(detect_language_prefix("bonjour"))     # unsupported
-    print(detect_language_prefix("123456"))      # unsupported
+    print(detect_language_prefix("你好"))  # zh
+    print(detect_language_prefix("hello world"))  # en
+    print(detect_language_prefix("bonjour"))  # unsupported
+    print(detect_language_prefix("123456"))  # unsupported
