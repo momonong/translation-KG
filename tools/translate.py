@@ -2,6 +2,7 @@ import os
 import requests
 from dotenv import load_dotenv
 from utils.chinese_s2t import to_traditional, convert_list
+from langdetect import detect
 
 
 load_dotenv()
@@ -10,11 +11,23 @@ API_URL = os.getenv("TRANSLATE_API_URL")
 API_KEY = os.getenv("TRANSLATE_API_KEY", "")
 
 
-def translate(text: str, target: str = "zh", alt: int = 3) -> dict:
-    if target not in ("en", "zh"):
-        raise ValueError(
-            f"Unsupported target language: {target}. Only 'en' and 'zh' are supported."
-        )
+def detect_lang(text, context=""):
+    try:
+        sample = context if context else text
+        lang = detect(sample)
+        return lang  # 'en', 'zh-cn', 'zh-tw', etc
+    except:
+        return "unknown"
+
+
+def translate(text: str, context: str = None, alt: int = 3) -> dict:
+    # 自動偵測
+    sample = f"{context} {text}" if context else text
+    lang = detect_lang(sample)
+    if lang.startswith("zh"):
+        target = "en"
+    else:
+        target = "zh"
 
     payload = {
         "q": text,
@@ -24,6 +37,9 @@ def translate(text: str, target: str = "zh", alt: int = 3) -> dict:
         "alternatives": alt,
         "api_key": API_KEY,
     }
+
+    if context:
+        payload["context"] = context  # context-aware API or LLM 可用
 
     try:
         response = requests.post(API_URL, json=payload, timeout=5)
