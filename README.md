@@ -25,3 +25,8 @@ poetry run python -m scripts.export_graph
 poetry run libretranslate --load-only en,zh --url-prefix libre-translate --port 5090
 poetry run uvicorn api.main:app --reload
 ```
+
+## Clean data
+```
+0 4 * * * cd /your/project/path && python -c "from routers.pdf_manage import clean_old_pdfs; clean_old_pdfs(2)"
+```

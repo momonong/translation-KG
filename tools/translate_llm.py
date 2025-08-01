@@ -24,44 +24,55 @@ def translate_with_llm(word, context):
     """
     lang = detect_lang(context)
     if lang == "en":
-        # 英文查詞 > 中文
         prompt = f"""
-            請根據下列英文句子的語境，將指定單字「{word}」翻譯為台灣常用的繁體中文詞語，**嚴禁使用中國大陸詞彙**。
-            請直接輸出下列 HTML 格式（**每一行都要有**），**不要補充說明，不要包 div/pre/code，只能回傳以下內容：**
+            Based on the following English sentence, translate the specified word (“{word}”) into the most appropriate Taiwanese traditional Chinese word, strictly avoiding Mainland Chinese expressions.
+            If the word does not exist in the sentence, simply output "無此單字" (do not speculate or invent any meaning).
+            Please output the result using **only** the following HTML format, with every line included. 
+            **Each <b> tag must have inline style: <b style="font-weight:bold">.**
+            Do not add explanations, do not wrap in div/pre/code, and return only the following content:
 
-            <b>查詢單字：</b>{word}<br>
-            <b>主要義項：</b>（最適合此語境的台灣用語，單詞即可）<br>
-            <b>詞性：</b>（如：名詞/動詞/形容詞…）<br>
-            <b>語意說明：</b>（20字內簡明描述，請描述語境中的意思）<br>
-            <b>其他常見義項：</b>
+            <b style="font-weight:bold">查詢單字：</b>{word}<br>
+            <b style="font-weight:bold">主要義項：</b>(The most suitable Taiwanese word for this context, single word only)<br>
+            <b style="font-weight:bold">詞性：</b>(e.g., 名詞/動詞/形容詞…)<br>
+            <b style="font-weight:bold">語意說明：</b>(Within 20 characters, briefly describe the contextual meaning)<br>
+            <b style="font-weight:bold">其他常見義項：</b>
             <ul>
-            <li>義項1（如有）</li>
-            <li>義項2（如有）</li>
+            <li>義項1 (if any)</li>
+            <li>義項2 (if any)</li>
+            <li>義項3 (if any)</li>
+            <li>義項4 (if any)</li>
+            <li>義項5 (if any)</li>
             </ul>
 
-            英文句子：{context}
+            English sentence: {context}
             查詢單字：{word}
         """
-
     elif lang == "zh":
-        # 中文查詞 > 英文
         prompt = f"""
-            請根據下列**中文句子**的語境，將指定單字「{word}」翻譯為**最貼切自然的英文詞彙**，請參考語境判斷詞義。
-            請直接輸出下列 HTML 格式（每一行都要有），**不要補充說明，不要包 div/pre/code，只能回傳以下內容：**
+            Based on the following Chinese sentence, translate the specified word (“{word}”) into the most natural and contextually appropriate English word.
+            If the word does not exist in the sentence, simply output "無此單字" (do not speculate or invent any meaning).
+            Please output the result using **only** the following HTML format, with every line included. 
+            **Each <b> tag must have inline style: <b style="font-weight:bold">.**
+            Do not add explanations, do not wrap in div/pre/code, and return only the following content:
 
-            <b>查詢單字：</b>{word}<br>
-            <b>主要義項：</b>（最貼切自然的英文單字）<br>
-            <b>詞性：</b>（英文，例：noun/verb/adj...）<br>
-            <b>語意說明：</b>（用英文，20 words 以內簡明描述，請描述語境中的意思）<br>
-            <b>其他常見義項：</b>
+            <b style="font-weight:bold">查詢單字：</b>{word}<br>
+            <b style="font-weight:bold">主要義項：</b>(The most natural English word for this context, single word only)<br>
+            <b style="font-weight:bold">詞性：</b>(English, e.g., noun/verb/adj...)<br>
+            <b style="font-weight:bold">語意說明：</b>(In English, within 20 words, briefly describe the contextual meaning)<br>
+            <b style="font-weight:bold">其他常見義項：</b>
             <ul>
-            <li>義項1（如有，英文）</li>
-            <li>義項2（如有，英文）</li>
+            <li>Alternative 1 (if any, English)</li>
+            <li>Alternative 2 (if any, English)</li>
+            <li>Alternative 3 (if any, English)</li>
+            <li>Alternative 4 (if any, English)</li>
+            <li>Alternative 5 (if any, English)</li>
             </ul>
 
-            中文句子：{context}
+            Chinese sentence: {context}
             查詢單字：{word}
         """
+
+
     response = client.models.generate_content(
         model="gemini-2.5-flash-lite-preview-06-17",
         contents=prompt,
