@@ -1,12 +1,7 @@
 # translation-KG
 
-## License
+Download the extention pack through [this link](https://drive.google.com/file/d/1yt7KNJW46KOLhjoAnSZsezYzy9b4Y7e7/view?usp=sharing).
 
-This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0).
-
-It includes components based on [LibreTranslate](https://github.com/LibreTranslate/LibreTranslate), which is also licensed under AGPL-3.0.
-
-If you modify and distribute this project (including making it available as a network service), please ensure your changes are made available under the same license.
 
 ## Knowledge Graph
 
@@ -22,7 +17,6 @@ poetry run python -m scripts.export_graph
 ## Translating
 
 ```
-poetry run libretranslate --load-only en,zh --url-prefix libre-translate --port 5090
 poetry run uvicorn api.main:app --reload
 ```
 
