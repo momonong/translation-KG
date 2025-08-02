@@ -1,5 +1,4 @@
 import re
-from langdetect import detect
 
 
 def detect_lang(term: str) -> str:
@@ -29,10 +28,10 @@ if __name__ == "__main__":
     ]
 
     for term in test_terms:
-        lang_prefix = detect_language_prefix(term)
+        lang_prefix = detect_lang(term)
         print(f"Term: {term} | Detected Language Prefix: {lang_prefix}")
 
-    print(detect_language_prefix("你好"))  # zh
-    print(detect_language_prefix("hello world"))  # en
-    print(detect_language_prefix("bonjour"))  # unsupported
-    print(detect_language_prefix("123456"))  # unsupported
+    print(detect_lang("你好"))  # zh
+    print(detect_lang("hello world"))  # en
+    print(detect_lang("bonjour"))  # unsupported
+    print(detect_lang("123456"))  # unsupported
