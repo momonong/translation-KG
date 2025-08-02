@@ -1,6 +1,6 @@
 # translation-KG
 
-Download the extention pack through [this link](https://drive.google.com/file/d/1yt7KNJW46KOLhjoAnSZsezYzy9b4Y7e7/view?usp=sharing).
+Download the extention pack through [this link](https://drive.google.com/file/d/1BnjQUdvXLQYBcoiD7zqaw0j3mmoATEpM/view?usp=sharing).
 
 ## Knowledge Graph
 
