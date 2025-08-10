@@ -26,6 +26,8 @@ poetry run uvicorn api.main:app --reload
 ```
 
 ## Docker
+
 ```
-docker build --platform linux/amd64 -t lexilight:latest .
+docker build --platform linux/amd64 -t gcr.io/agent-hackathon-463002/lexilight:latest .
+docker push gcr.io/agent-hackathon-463002/lexilight:latest
 ```

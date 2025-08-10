@@ -1,123 +1,219 @@
+import html
 import os
+import json
+import re
+from typing import Optional, Dict, Any, List, Tuple
+
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from utils.detect_lang import detect_lang
 
 load_dotenv()
-
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-# Google Search (grounding) tool
-grounding_tool = types.Tool(
-    google_search=types.GoogleSearch()
+# 要求模型回 JSON
+GEN_CONFIG_JSON = types.GenerateContentConfig(
+    response_mime_type="application/json"
 )
 
-config = types.GenerateContentConfig(
-    tools=[grounding_tool]
-)
+# ---------- 小工具 ----------
+def _clean_list(items: Optional[List[str]]) -> List[str]:
+    if not items:
+        return []
+    cleaned = []
+    for s in items:
+        if not s:
+            continue
+        t = str(s).strip()
+        if not t:
+            continue
+        if re.fullmatch(r"(?:N/?A|n/a|none|\(if any\)|（?若有）?)", t, flags=re.I):
+            continue
+        cleaned.append(t)
+    return cleaned
 
-def translate_with_llm(word, context):
-    """
-    使用 gemini-2.5-flash-lite-preview-06-17 + Google Search Tool 做 context-aware 查詞
-    必要時自動查網路資訊
-    """
-    lang = detect_lang(context)
-    if lang == "en":
-        prompt = f"""
-            Based on the following English sentence, translate the specified word (“{word}”) into the most appropriate Taiwanese traditional Chinese word, strictly avoiding Mainland Chinese expressions.
-            If the word does not exist in the sentence, simply output "無此單字" (do not speculate or invent any meaning).
-            Please output the result using **only** the following HTML format, with every line included. 
-            **Each <b> tag must have inline style: <b style="font-weight:bold">.**
-            Do not add explanations, do not wrap in div/pre/code, and return only the following content:
-
-            <b style="font-weight:bold">查詢單字：</b>{word}<br>
-            <b style="font-weight:bold">主要義項：</b>(The most suitable Taiwanese word for this context, single word only)<br>
-            <b style="font-weight:bold">詞性：</b>(e.g., 名詞/動詞/形容詞…)<br>
-            <b style="font-weight:bold">語意說明：</b>(Within 20 characters, briefly describe the contextual meaning)<br>
-            <b style="font-weight:bold">其他常見義項：</b>
-            <ul>
-            <li>義項1 (if any)</li>
-            <li>義項2 (if any)</li>
-            <li>義項3 (if any)</li>
-            <li>義項4 (if any)</li>
-            <li>義項5 (if any)</li>
-            </ul>
-
-            English sentence: {context}
-            查詢單字：{word}
-        """
-    elif lang == "zh":
-        prompt = f"""
-            Based on the following Chinese sentence, translate the specified word (“{word}”) into the most natural and contextually appropriate English word.
-            If the word does not exist in the sentence, simply output "無此單字" (do not speculate or invent any meaning).
-            Please output the result using **only** the following HTML format, with every line included. 
-            **Each <b> tag must have inline style: <b style="font-weight:bold">.**
-            Do not add explanations, do not wrap in div/pre/code, and return only the following content:
-
-            <b style="font-weight:bold">查詢單字：</b>{word}<br>
-            <b style="font-weight:bold">主要義項：</b>(The most natural English word for this context, single word only)<br>
-            <b style="font-weight:bold">詞性：</b>(English, e.g., noun/verb/adj...)<br>
-            <b style="font-weight:bold">語意說明：</b>(In English, within 20 words, briefly describe the contextual meaning)<br>
-            <b style="font-weight:bold">其他常見義項：</b>
-            <ul>
-            <li>Alternative 1 (if any, English)</li>
-            <li>Alternative 2 (if any, English)</li>
-            <li>Alternative 3 (if any, English)</li>
-            <li>Alternative 4 (if any, English)</li>
-            <li>Alternative 5 (if any, English)</li>
-            </ul>
-
-            Chinese sentence: {context}
-            查詢單字：{word}
-        """
-
-
-    response = client.models.generate_content(
-        model="gemini-2.5-flash-lite-preview-06-17",
-        contents=prompt,
-        config=config,
-    )
-    # print(f"LLM 回應：{response.text.strip()}")
-    return response.text.strip()
-
-# ==== 測試範例 ====
-if __name__ == "__main__":
-    test_cases = [
-        (
-            "April is the cruellest month, breeding / Lilacs out of the dead land, mixing / Memory and desire, stirring / Dull roots with spring rain.",
-            "stirring"
-        ),
-        (
-            "She felt herself transfixed by the beam of the lighthouse, unable to move, as though under a spell.",
-            "beam"
-        ),
-        (
-            "I am silver and exact. I have no preconceptions. Whatever I see I swallow immediately / Just as it is, unmisted by love or dislike.",
-            "swallow"
-        ),
-        (
-            "Give every man thy ear, but few thy voice; Take each man's censure, but reserve thy judgment.",
-            "censure"
-        ),
-        (
-            "The narrative unfolds with a haunting stillness, every movement weighted with meaning.",
-            "stillness"
-        ),
-        (
-            "He smiled understandingly—much more than understandingly. It was one of those rare smiles with a quality of eternal reassurance in it.",
-            "reassurance"
-        ),
-        (
-            "Hope is the thing with feathers / That perches in the soul— / And sings the tune without the words— / And never stops—at all—",
-            "perches"
-        ),
+def _to_html_en2zh(data: Dict[str, Any]) -> str:
+    if data.get("not_found"):
+        return "無此單字"
+    cm = html.escape(str(data.get("context_meaning", "")))
+    exp = html.escape(str(data.get("meaning_explanation", "")))
+    others = _clean_list(data.get("other_meanings", []))
+    parts = [
+        "<b style='font-weight:bold'>情境語意：</b>" + cm + "<br>",
+        "<b style='font-weight:bold'>語意說明：</b>" + exp + "<br>",
+        "<b style='font-weight:bold'>其他可能語意：</b>",
+        "<ul>",
     ]
+    for o in others:
+        parts.append(f"<li>{html.escape(o)}</li>")
+    parts.append("</ul>")
+    return "".join(parts)
+
+def _to_html_zh2en(data: Dict[str, Any]) -> str:
+    if data.get("not_found"):
+        return "無此單字"
+    cm = html.escape(str(data.get("context_meaning", "")))
+    exp = html.escape(str(data.get("meaning_explanation", "")))
+    others = _clean_list(data.get("other_meanings", []))
+    parts = [
+        "<b style='font-weight:bold'>Contextual meaning:</b> " + cm + "<br>",
+        "<b style='font-weight:bold'>Meaning description:</b> " + exp + "<br>",
+        "<b style='font-weight:bold'>Other possible meanings:</b>",
+        "<ul>",
+    ]
+    for o in others:
+        parts.append(f"<li>{html.escape(o)}</li>")
+    parts.append("</ul>")
+    return "".join(parts)
+
+# ---------- Prompts：加入 full_query（擴張片語）＋ pos ----------
+_POS_ENUM = ["noun","verb","adj","adv","phrase","det","pron","num","unknown"]
+
+def _prompt_en2zh(context: str, selection: str, pos_en: Optional[str]) -> str:
+    pos_hint = (pos_en or "").strip().lower() or "unknown"
+    return f"""
+You are a careful EN→ZH(TW) lexicographer. Read the sentence and the user selection.
+If the selection is part of a larger meaningful phrase (e.g., "no longer", "take off"), expand it.
+
+Return **JSON only** with ALL keys below:
+
+{{
+  "not_found": false,                   // true if target not in sentence
+  "full_query": "string",               // the most semantically complete span in the sentence that should be looked up (expanded from selection if needed)
+  "pos": "one of {_POS_ENUM}",          // POS of full_query; "phrase" allowed
+  "context_meaning": "string",          // best Taiwanese term (prefer single word)
+  "meaning_explanation": "string",      // ≤20 Chinese characters
+  "other_meanings": ["string"]          // other common TW options; [] if none
+}}
+
+Rules:
+- Use **Taiwanese Traditional Chinese** only; avoid Mainland terms.
+- If unsure about expansion, keep the selection as full_query and set pos="unknown".
+- Do not add placeholders like "N/A".
+- The selection is: "{selection}"
+- POS hint (optional): {pos_hint}
+
+Sentence:
+{context}
+""".strip()
+
+def _prompt_zh2en(context: str, selection: str, pos_en: Optional[str]) -> str:
+    pos_hint = (pos_en or "").strip().lower() or "unknown"
+    return f"""
+You are a precise ZH→EN lexicographer. Read the sentence and the user selection.
+If the selection is part of a larger meaningful phrase, expand it.
+
+Return **JSON only** with ALL keys below:
+
+{{
+  "not_found": false,                   // true if target not in sentence
+  "full_query": "string",               // expanded phrase if needed
+  "pos": "one of {_POS_ENUM}",
+  "context_meaning": "string",          // best single English word if possible, or fixed phrase
+  "meaning_explanation": "string",      // ≤20 words, brief gloss in English
+  "other_meanings": ["string"]
+}}
+
+Rules:
+- JSON only, no extra text.
+- If unsure about expansion, keep the selection as full_query and set pos="unknown".
+- Do not output placeholders like "N/A".
+- The selection is: "{selection}"
+- POS hint (optional): {pos_hint}
+
+Chinese sentence:
+{context}
+""".strip()
+
+def _parse_json(text: str) -> Dict[str, Any]:
+    try:
+        data = json.loads(text or "{}")
+        if not isinstance(data, dict):
+            return {}
+        data.setdefault("not_found", False)
+        data.setdefault("full_query", "")
+        data.setdefault("pos", "unknown")
+        data.setdefault("context_meaning", "")
+        data.setdefault("meaning_explanation", "")
+        data.setdefault("other_meanings", [])
+        return data
+    except Exception:
+        return {}
+
+# ---------- 主要函式：回 HTML ＋ 正規化資訊 ----------
+def translate_with_llm(
+    word: str,
+    context: str,
+    pos_en: Optional[str]=None,
+    pos_zh: Optional[str]=None
+) -> Dict[str, Any]:
+    """
+    回傳：
+    {
+      "html": "<b>…</b>…",          # 固定版型 HTML（不含查詢目標一行）
+      "normalized_target": "not any longer",
+      "normalized_pos": "adv"
+    }
+    """
+    # 安全（只進 prompt，不直接渲染）
+    selection_safe = html.escape(word)
+    context_safe = html.escape(context)
+
+    lang = detect_lang(context)
+
+    if lang == "en":
+        prompt = _prompt_en2zh(context=context_safe, selection=selection_safe, pos_en=pos_en)
+        resp = client.models.generate_content(
+            model="gemini-2.5-flash-lite-preview-06-17",
+            contents=prompt,
+            config=GEN_CONFIG_JSON,
+        )
+        data = _parse_json(getattr(resp, "text", "") or "")
+        html_out = _to_html_en2zh(data)
+
+    elif lang == "zh":
+        prompt = _prompt_zh2en(context=context_safe, selection=selection_safe, pos_en=pos_en)
+        resp = client.models.generate_content(
+            model="gemini-2.5-flash-lite-preview-06-17",
+            contents=prompt,
+            config=GEN_CONFIG_JSON,
+        )
+        data = _parse_json(getattr(resp, "text", "") or "")
+        html_out = _to_html_zh2en(data)
+
+    else:
+        # 非英/中語句
+        return {"html": "無此單字", "normalized_target": word, "normalized_pos": "unknown"}
+
+    # 兜底：如果模型沒給 full_query，就用原 selection
+    full_query = (data.get("full_query") or "").strip() or word
+    pos = (data.get("pos") or "unknown").lower()
+    if pos not in _POS_ENUM:
+        pos = "unknown"
+
+    # 如果 not_found，就保持原選字
+    if data.get("not_found") is True:
+        full_query = word
+        pos = "unknown"
+
+    return {
+        "html": html_out,
+        "normalized_target": full_query,
+        "normalized_pos": pos
+    }
 
 
-    for idx, (sentence, word) in enumerate(test_cases, 1):
-        print(f"--- 文學範例 {idx} ---")
-        print("原文句子：", sentence)
-        output = translate_with_llm(word, sentence)
-        print("查詞結果：\n" + output)
-        print("\n")
+# ==== 簡易測試 ====
+if __name__ == "__main__":
+    tests = [
+        ("They do not work for us any longer.", "longer"),
+        ("Ian is not an engineer any more.", "not"),
+        ("They will no longer be enemies.", "no"),
+        ("I quickly set the tent up and slept.", "up"),
+    ]
+    for s, w in tests:
+        out = translate_with_llm(w, s)
+        print(s)
+        print("→", w, "=>", out["normalized_target"], "/", out["normalized_pos"])
+        print(out["html"][:120], "...\n")
