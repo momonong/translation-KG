@@ -98,8 +98,8 @@ Sentence:
 {context}
 """.strip()
 
-def _prompt_zh2en(context: str, selection: str, pos_en: Optional[str]) -> str:
-    pos_hint = (pos_en or "").strip().lower() or "unknown"
+def _prompt_zh2en(context: str, selection: str, pos_zh: Optional[str]) -> str:
+    pos_hint = (pos_zh or "").strip().lower() or "unknown"
     return f"""
 You are a precise ZH→EN lexicographer. Read the sentence and the user selection.
 If the selection is part of a larger meaningful phrase, expand it.
@@ -173,7 +173,7 @@ def translate_with_llm(
         html_out = _to_html_en2zh(data)
 
     elif lang == "zh":
-        prompt = _prompt_zh2en(context=context_safe, selection=selection_safe, pos_en=pos_en)
+        prompt = _prompt_zh2en(context=context_safe, selection=selection_safe, po_zh=pos_zh)
         resp = client.models.generate_content(
             model="gemini-2.5-flash-lite-preview-06-17",
             contents=prompt,
