@@ -4,8 +4,6 @@ from typing import Optional, Literal
 class TranslateRequest(BaseModel):
     text: str
     context: str
-    pos_en: Optional[str] = None  # "noun" | "verb" | "adj" | "adv" | "phrase" | "unknown"
-    pos_zh: Optional[str] = None
 
 
 class TranslateResponse(BaseModel):
