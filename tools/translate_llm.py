@@ -72,28 +72,34 @@ _POS_ENUM = ["noun","verb","adj","adv","phrase","det","pron","num","unknown"]
 
 def _prompt_en2zh(context: str, selection: str) -> str:
     return f"""
-You are a careful EN→ZH(TW) lexicographer. Read the sentence and the user selection.
-If the selection is part of a larger meaningful phrase (e.g., "no longer", "take off"), expand it.
+You are a careful EN→ZH(TW) lexicographer. Read the sentence and analyze the user selection IN CONTEXT.
+
+**CRITICAL**: Look at how "{selection}" is used in this specific sentence. If it's preceded by "a", "the", or used as an object, it's likely a noun.
 
 Return **JSON only** with ALL keys below:
 
 {{
   "not_found": false,                   // true if target not in sentence
-  "full_query": "string",               // the most semantically complete span in the sentence that should be looked up (expanded from selection if needed)
-  "pos": "one of {_POS_ENUM}",          // POS of full_query; "phrase" allowed
-  "context_meaning": "string",          // best Taiwanese term (prefer single word)
+  "full_query": "string",               // the most semantically complete span (expand "walk" to "a walk" if it's a noun)
+  "pos": "one of {_POS_ENUM}",          // POS based on context usage
+  "context_meaning": "string",          // best Taiwanese term
   "meaning_explanation": "string",      // ≤20 Chinese characters
-  "other_meanings": ["string"]          // other common TW options; [] if none
+  "other_meanings": ["string"]          // other common TW options
 }}
 
 Rules:
 - Use **Taiwanese Traditional Chinese** only; avoid Mainland terms.
-- If unsure about expansion, keep the selection as full_query and set pos="unknown".
-- Do not add placeholders like "N/A".
-- The selection is: "{selection}"
+- **Context Analysis**: 
+  * "go for a walk" → "walk" is a NOUN, expand to "a walk"
+  * "I walk home" → "walk" is a VERB
+  * "according to" → idiomatic PHRASE
+- **POS Guidelines**: 
+  * "noun" for things ("a walk", "the book")
+  * "verb" for actions ("walk home", "run fast")
+  * "phrase" ONLY for idioms ("according to", "no longer")
+- Selection: "{selection}"
 
-Sentence:
-{context}
+Sentence: {context}
 """.strip()
 
 def _prompt_zh2en(context: str, selection: str) -> str:
