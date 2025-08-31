@@ -10,7 +10,6 @@ def translate_text(payload: TranslateRequest):
         out = translate_with_llm(
             word=payload.text,
             context=payload.context,
-            pos_en=payload.pos_en
         )
         return TranslateResponse(
             result=out["html"],

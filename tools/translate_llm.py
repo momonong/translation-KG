@@ -70,8 +70,7 @@ def _to_html_zh2en(data: Dict[str, Any]) -> str:
 # ---------- Prompts：加入 full_query（擴張片語）＋ pos ----------
 _POS_ENUM = ["noun","verb","adj","adv","phrase","det","pron","num","unknown"]
 
-def _prompt_en2zh(context: str, selection: str, pos_en: Optional[str]) -> str:
-    pos_hint = (pos_en or "").strip().lower() or "unknown"
+def _prompt_en2zh(context: str, selection: str) -> str:
     return f"""
 You are a careful EN→ZH(TW) lexicographer. Read the sentence and the user selection.
 If the selection is part of a larger meaningful phrase (e.g., "no longer", "take off"), expand it.
@@ -92,14 +91,12 @@ Rules:
 - If unsure about expansion, keep the selection as full_query and set pos="unknown".
 - Do not add placeholders like "N/A".
 - The selection is: "{selection}"
-- POS hint (optional): {pos_hint}
 
 Sentence:
 {context}
 """.strip()
 
-def _prompt_zh2en(context: str, selection: str, pos_zh: Optional[str]) -> str:
-    pos_hint = (pos_zh or "").strip().lower() or "unknown"
+def _prompt_zh2en(context: str, selection: str) -> str:
     return f"""
 You are a precise ZH→EN lexicographer. Read the sentence and the user selection.
 If the selection is part of a larger meaningful phrase, expand it.
@@ -120,7 +117,6 @@ Rules:
 - If unsure about expansion, keep the selection as full_query and set pos="unknown".
 - Do not output placeholders like "N/A".
 - The selection is: "{selection}"
-- POS hint (optional): {pos_hint}
 
 Chinese sentence:
 {context}
@@ -145,8 +141,6 @@ def _parse_json(text: str) -> Dict[str, Any]:
 def translate_with_llm(
     word: str,
     context: str,
-    pos_en: Optional[str]=None,
-    pos_zh: Optional[str]=None
 ) -> Dict[str, Any]:
     """
     回傳：
@@ -163,7 +157,7 @@ def translate_with_llm(
     lang = detect_lang(context)
 
     if lang == "en":
-        prompt = _prompt_en2zh(context=context_safe, selection=selection_safe, pos_en=pos_en)
+        prompt = _prompt_en2zh(context=context_safe, selection=selection_safe)
         resp = client.models.generate_content(
             model="gemini-2.5-flash-lite-preview-06-17",
             contents=prompt,
@@ -173,7 +167,7 @@ def translate_with_llm(
         html_out = _to_html_en2zh(data)
 
     elif lang == "zh":
-        prompt = _prompt_zh2en(context=context_safe, selection=selection_safe, po_zh=pos_zh)
+        prompt = _prompt_zh2en(context=context_safe, selection=selection_safe)
         resp = client.models.generate_content(
             model="gemini-2.5-flash-lite-preview-06-17",
             contents=prompt,
