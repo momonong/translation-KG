@@ -165,7 +165,7 @@ def translate_with_llm(
     if lang == "en":
         prompt = _prompt_en2zh(context=context_safe, selection=selection_safe)
         resp = client.models.generate_content(
-            model="gemini-2.5-flash-lite-preview-06-17",
+            model="gemini-2.5-flash-lite-preview-09-2025",
             contents=prompt,
             config=GEN_CONFIG_JSON,
         )
@@ -175,7 +175,7 @@ def translate_with_llm(
     elif lang == "zh":
         prompt = _prompt_zh2en(context=context_safe, selection=selection_safe)
         resp = client.models.generate_content(
-            model="gemini-2.5-flash-lite-preview-06-17",
+            model="gemini-2.5-flash-lite-preview-09-2025",
             contents=prompt,
             config=GEN_CONFIG_JSON,
         )

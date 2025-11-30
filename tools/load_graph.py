@@ -1,21 +1,16 @@
-import json
+import pickle
 import networkx as nx
+import time
 
-
-def load_graph_from_jsonl(jsonl_path: str) -> nx.MultiDiGraph:
-    G = nx.MultiDiGraph()
-
-    with open(jsonl_path, "r", encoding="utf-8") as f:
-        for line in f:
-            data = json.loads(line)
-            u = data["source"]
-            v = data["target"]
-            rel = data["relation"]
-            weight = data.get("weight", 1.0)  # 預設 1.0，如未指定
-
-            G.add_node(u)
-            G.add_node(v)
-            G.add_edge(u, v, key=rel, label=rel, weight=weight)
-
-    print(f"已載入圖：{G.number_of_nodes()} 節點，{G.number_of_edges()} 邊")
+def load_graph_from_pickle(pkl_path: str) -> nx.MultiDiGraph:
+    print(f"正在載入 Graph 物件 from {pkl_path}...")
+    start = time.time()
+    
+    with open(pkl_path, "rb") as f:
+        G = pickle.load(f)
+        
+    end = time.time()
+    print(f"Graph 載入完畢！耗時: {end - start:.4f} 秒")
+    print(f"節點: {G.number_of_nodes()}, 邊: {G.number_of_edges()}")
+    
     return G
